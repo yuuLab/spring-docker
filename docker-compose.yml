@@ -1,0 +1,44 @@
+version: "3.9"
+services:
+  app:
+    # image: openjdk:11-slim
+    build: .
+    container_name: app
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db_postgres
+    # volumes: 
+    #   - "./DemoApp/target/demoapp.jar:/tmp/demoapp.jar"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_postgres:5432/develop
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=password
+    # entrypoint: ["java", "-jar", "/tmp/demoapp.jar"]
+
+  db_postgres:
+    image: postgres:13.1-alpine
+    container_name: db_postgres
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=develop
+      - TZ=Asia/Tokyo
+    ports:
+      - "5432:5432"
+    volumes:
+      - "./database/postgres/data:/var/lib/postgresql/data"
+      - "./database/postgres/initdb:/docker-entrypoint-initdb.d"
+
+  pgadmin4:
+    image: dpage/pgadmin4:6.4
+    container_name: pgadmin4
+    ports:
+      - 80:80
+    volumes:
+      - ./database/pgadmin:/var/lib/pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=root
+      - PGADMIN_DEFAULT_PASSWORD=password
+      - PGADMIN_DEFAULT_EMAIL=test@example.com
+    hostname: pgadmin4
