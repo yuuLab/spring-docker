@@ -14,8 +14,13 @@ import com.yuuLab.springLab.repository.entity.AppUser;
 @Service
 public class AppUserInquiryLogic {
 
+	
+	protected final AppUserDao appUserDao;
+	
 	@Autowired
-	protected AppUserDao appUserDao;
+	public AppUserInquiryLogic(AppUserDao appUserDao) {
+		this.appUserDao = appUserDao;
+	}
 	
 	public AppUserInquiryOutput getAppUserInfo(String userId) {
 		AppUser user = this.appUserDao.selectById(userId);
