@@ -4,13 +4,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,33 +18,28 @@ import com.yuuLab.springLab.db.testtool.DBTestWorker;
 
 @SpringBootTest(classes=DemoAppApplication.class)
 @AutoConfigureMockMvc
-//@Import(DBUnitConfigration.class)
-@Rollback(value = false)
+@Transactional
 public class AppUesrControllerTests {
 	
 	@Autowired
 	private MockMvc mockMvc;
 	
-	private DBTestWorker dbTestWorker;
-	
 	private Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AppUesrControllerTests.class);
 	
-	@BeforeEach
+	@BeforeTestClass
 	private void setUp() {
 		try {
-			this.dbTestWorker = new DBTestWorker("AppUserControllerTests");
+			LOGGER.info("start setup");
+			// データベース準備
+			DBTestWorker dbTestWorker= new DBTestWorker("AppUserControllerTests");
+			dbTestWorker.setUpData();
 		} catch (Exception e) {
 			LOGGER.info("failed test setUp", e);
 		}
 	}
 	
 	@Test
-	@Transactional
 	public void testGetAppUser() throws Exception {
-		// データベース準備
-		this.dbTestWorker.deleteAllData();
-		this.dbTestWorker.insertPreDataset();
-		
 		String responseJson = this.mockMvc.perform(
 			get("/user/1000000000000000"))
 			.andExpect(status().isOk())

@@ -25,7 +25,7 @@ public class AppUserInquiryLogicTests {
 	private AppUserDao appUserDao;
 	
 	@Test
-	public void testGetAppUserInfo() {
+	public void testGetAppUserInfo() throws Exception {
 		String testId = "1000000000";
 		
 		// Mockとしたクラスのメソッドについて、testIdを引数に実行した場合に返却される値を指定する。
