@@ -9,6 +9,7 @@ import org.dbunit.database.DatabaseConfig;
 import org.dbunit.database.DatabaseConnection;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.IDataSet;
+import org.dbunit.dataset.ITable;
 import org.dbunit.dataset.csv.CsvDataSet;
 import org.dbunit.dataset.stream.IDataSetProducer;
 import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory;
@@ -17,13 +18,15 @@ import org.slf4j.Logger;
 
 public class DBTestWorker {
 	
-	private static final String PRE_DATASET_DIR = "src/test/resources/dataset/premise/";
+	private static final String PRE_DATASET_DIR = "src/test/resources/dataset/";
 	
 	private static final String DB_URL = "jdbc:postgresql://localhost:5432/develop";
 	private static final String DB_USER = "root";
 	private static final String DB_PASS = "password";
 	
-	protected IDataSet dataset;
+	protected IDataSet beforeDataset;
+	
+	protected IDataSet expectedDataset;
 	
 	protected  IDataSetProducer producer;
 	
@@ -45,7 +48,8 @@ public class DBTestWorker {
 		DatabaseConfig config = dbconn.getConfig();
 		config.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY, new PostgresqlDataTypeFactory());
 		
-		this.dataset = new CsvDataSet(new File(PRE_DATASET_DIR + preDatasetFileDir));
+		this.beforeDataset = new CsvDataSet(new File(PRE_DATASET_DIR + preDatasetFileDir + "/before"));
+		this.expectedDataset = new CsvDataSet(new File(PRE_DATASET_DIR + preDatasetFileDir + "/expected"));
 	}
 	
 	public void setUpData()  throws Exception {
@@ -55,20 +59,29 @@ public class DBTestWorker {
 		} catch (Exception e) {
 			LOGGER.info("failed to set up data", e);
 			throw e;
-		} finally {
-			this.closeDbConn();
 		}
 	}
 	
 	
 	private void deleteAllData() throws Exception {
 		LOGGER.info("DELETE ALL DATA");
-		DatabaseOperation.DELETE_ALL.execute(dbconn, this.dataset);
+		DatabaseOperation.DELETE_ALL.execute(dbconn, this.beforeDataset);
 	}
 	
 	private void insertPreDataset()  throws Exception {
 		LOGGER.info("INSERT TEST DATA");
-		DatabaseOperation.INSERT.execute(dbconn, this.dataset);
+		DatabaseOperation.INSERT.execute(dbconn, this.beforeDataset);
+	}
+	
+	public ITable getExpectedData(String tableName) throws Exception {
+		// 期待されるデータを取得
+        ITable expectedTable = this.expectedDataset.getTable(tableName);
+        return expectedTable;
+	}
+	
+	public ITable getActualData(String tableName) throws Exception {
+		ITable actualTable = this.dbconn.createDataSet().getTable(tableName);
+		return actualTable;
 	}
 	
 	/**

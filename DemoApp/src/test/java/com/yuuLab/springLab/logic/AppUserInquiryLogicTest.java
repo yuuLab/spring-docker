@@ -15,7 +15,7 @@ import com.yuuLab.springLab.repository.entity.AppUser;
 
 
 @ExtendWith(SpringExtension.class)
-public class AppUserInquiryLogicTests {
+public class AppUserInquiryLogicTest {
 
 	@InjectMocks
 	private AppUserInquiryLogic logic;
